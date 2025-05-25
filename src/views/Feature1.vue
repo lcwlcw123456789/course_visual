@@ -2,7 +2,7 @@
   <div class="container">
     <!-- 返回主页按钮 -->
     <div class="back-home" @click="goHome" title="返回主页">
-      ⬅ 返回主页
+      <span class="icon">🏠</span>
     </div>
 
     <div class="content-box">
@@ -49,7 +49,7 @@ const years = Array.from({ length: 2024 - 1999 + 1 }, (_, i) => 1999 + i)
 
 const getChartSpec = async (year) => {
   try {
-    const res = await fetch(`/vega_charts/${year}_vega.json`)
+    const res = await fetch(`/vega_charts_1/${year}_vega.json`)
     return await res.json()
   } catch (err) {
     console.error(`加载 ${year} 年的图表失败：`, err)
