@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import * as vegaEmbed from 'vega-embed'
 import { useRouter } from 'vue-router'
 
@@ -76,6 +76,40 @@ const changeYear = async (year) => {
 }
 
 onMounted(renderChart)
+// 粒子鼠标跟随效果
+function handleMouseMove(e) {
+  const container = document.querySelector('.container')
+  const contentBox = document.querySelector('.content-box')
+
+  const x = e.clientX
+  const y = e.clientY
+  const rect = contentBox.getBoundingClientRect()
+
+  const isInsideContentBox =
+    x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+  if (isInsideContentBox) return
+  console.log('Mouse moved at', e.clientX, e.clientY)
+  console.log('Creating particle at:', e.clientX, e.clientY)
+
+  const particle = document.createElement('div')
+  particle.className = 'particle'
+  particle.style.left = `${e.clientX}px`
+  particle.style.top = `${e.clientY}px`
+  document.body.appendChild(particle)
+  console.log('Particle appended:', particle)
+
+  setTimeout(() => {
+    particle.remove()
+  }, 1000)
+}
+
+onMounted(() => {
+  window.addEventListener('mousemove', handleMouseMove)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', handleMouseMove)
+})
 </script>
 
 <style scoped>
@@ -217,4 +251,33 @@ onMounted(renderChart)
   opacity: 1;
   transform: translateY(0) scale(1);
 }
+</style>
+
+<style>
+/* 粒子样式 */
+.particle {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, rgba(100, 180, 255, 0.9) 0%, rgba(100, 180, 255, 0.4) 60%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: fadeOut 1.3s ease-out forwards;
+  box-shadow: 0 0 12px rgba(100, 180, 255, 0.7);
+  filter: blur(1.2px);
+  z-index: 9999;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
 </style>
