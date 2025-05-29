@@ -54,7 +54,7 @@ const vegaContainer = ref(null);
 
 // 加载 Vega 图表
 const updateChart = () => {
-  const specUrl = `../../public/vega_charts_2/vega_pie_${selectedYear.value}.json`; // 按需设置你实际的路径
+  const specUrl = `../../public/vega_charts_3/treemap_${selectedYear.value}.json`; // 按需设置你实际的路径
   vegaEmbed(vegaContainer.value, specUrl, { actions: false }).catch(
     console.error
   );
