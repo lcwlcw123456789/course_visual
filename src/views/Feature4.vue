@@ -78,7 +78,7 @@ const updateTooltip = () => {
 
 const renderVega = async () => {
   const year = yearOptions[selectedIndex.value];
-  const url = `../../public/vega_charts_2/vega_pie_${resolveYearToFile(
+  const url = `../../public/vega_charts_4/radarchart_${resolveYearToFile(
     year
   )}.json`;
 

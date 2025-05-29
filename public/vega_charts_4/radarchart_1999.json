@@ -1,0 +1,199 @@
+{
+    "$schema": "https://vega.github.io/schema/vega/v5.json",
+    "description": "A radar chart example, showing multiple dimensions in a radial layout.",
+    "width": 400,
+    "height": 400,
+    "padding": 40,
+    "autosize": { "type": "none", "contains": "padding" },
+
+    "signals": [{ "name": "radius", "update": "width / 2" }],
+
+    "data": [
+        {
+            "name": "table",
+            "values": [
+                { "key": "Animals", "value": 44556, "country": "CANADA" },
+                { "key": "Meats", "value": 78888, "country": "CANADA" },
+                { "key": "Fish", "value": 55555, "country": "CANADA" },
+                { "key": "Vegatables", "value": 95357, "country": "CANADA" },
+                { "key": "Animals", "value": 12222, "country": "MEXICO" },
+                { "key": "Meats", "value": 58222, "country": "MEXICO" },
+                { "key": "Fish", "value": 88522, "country": "MEXICO" },
+                { "key": "Vegatables", "value": 78322, "country": "MEXICO" },
+                { "key": "Animals", "value": 75738, "country": "CHINA" },
+                { "key": "Meats", "value": 46468, "country": "CHINA" },
+                { "key": "Fish", "value": 21538, "country": "CHINA" },
+                { "key": "Vegatables", "value": 35898, "country": "CHINA" }
+            ]
+        },
+        {
+            "name": "keys",
+            "source": "table",
+            "transform": [
+                {
+                    "type": "aggregate",
+                    "groupby": ["key"]
+                }
+            ]
+        }
+    ],
+
+    "scales": [
+        {
+            "name": "angular",
+            "type": "point",
+            "range": { "signal": "[-PI, PI]" },
+            "padding": 0.5,
+            "domain": { "data": "table", "field": "key" }
+        },
+        {
+            "name": "radial",
+            "type": "linear",
+            "range": { "signal": "[0, radius]" },
+            "zero": true,
+            "nice": false,
+            "domain": { "data": "table", "field": "value" },
+            "domainMin": 0
+        },
+        {
+            "name": "color",
+            "type": "ordinal",
+            "domain": { "data": "table", "field": "country" },
+            "range": { "scheme": "category10" }
+        }
+    ],
+
+    "encode": {
+        "enter": {
+            "x": { "signal": "radius" },
+            "y": { "signal": "radius" }
+        }
+    },
+
+    "marks": [
+        {
+            "type": "group",
+            "name": "categories",
+            "zindex": 1,
+            "from": {
+                "facet": {
+                    "data": "table",
+                    "name": "facet",
+                    "groupby": ["country"]
+                }
+            },
+            "marks": [
+                {
+                    "type": "line",
+                    "name": "country-line",
+                    "from": { "data": "facet" },
+                    "encode": {
+                        "enter": {
+                            "interpolate": { "value": "linear-closed" },
+                            "x": {
+                                "signal": "scale('radial', datum.value) * cos(scale('angular', datum.key))"
+                            },
+                            "y": {
+                                "signal": "scale('radial', datum.value) * sin(scale('angular', datum.key))"
+                            },
+                            "stroke": { "scale": "color", "field": "country" },
+                            "strokeWidth": { "value": 1 },
+                            "fill": { "scale": "color", "field": "country" },
+                            "fillOpacity": { "value": 0.1 }
+                        }
+                    }
+                },
+                {
+                    "type": "text",
+                    "name": "value-text",
+                    "from": { "data": "country-line" },
+                    "encode": {
+                        "enter": {
+                            "x": { "signal": "datum.x" },
+                            "y": { "signal": "datum.y" },
+                            "text": { "signal": "datum.datum.value" },
+                            "align": { "value": "center" },
+                            "baseline": { "value": "middle" },
+                            "fill": { "value": "black" }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "rule",
+            "name": "radial-grid",
+            "from": { "data": "keys" },
+            "zindex": 0,
+            "encode": {
+                "enter": {
+                    "x": { "value": 0 },
+                    "y": { "value": 0 },
+                    "x2": {
+                        "signal": "radius * cos(scale('angular', datum.key))"
+                    },
+                    "y2": {
+                        "signal": "radius * sin(scale('angular', datum.key))"
+                    },
+                    "stroke": { "value": "lightgray" },
+                    "strokeWidth": { "value": 1 }
+                }
+            }
+        },
+        {
+            "type": "text",
+            "name": "key-label",
+            "from": { "data": "keys" },
+            "zindex": 1,
+            "encode": {
+                "enter": {
+                    "x": {
+                        "signal": "(radius + 5) * cos(scale('angular', datum.key))"
+                    },
+                    "y": {
+                        "signal": "(radius + 5) * sin(scale('angular', datum.key))"
+                    },
+                    "text": { "field": "key" },
+                    "align": [
+                        {
+                            "test": "abs(scale('angular', datum.key)) > PI / 2",
+                            "value": "right"
+                        },
+                        {
+                            "value": "left"
+                        }
+                    ],
+                    "baseline": [
+                        {
+                            "test": "scale('angular', datum.key) > 0",
+                            "value": "top"
+                        },
+                        {
+                            "test": "scale('angular', datum.key) == 0",
+                            "value": "middle"
+                        },
+                        {
+                            "value": "bottom"
+                        }
+                    ],
+                    "fill": { "value": "black" },
+                    "fontWeight": { "value": "bold" }
+                }
+            }
+        },
+        {
+            "type": "line",
+            "name": "outer-line",
+            "from": { "data": "radial-grid" },
+            "encode": {
+                "enter": {
+                    "interpolate": { "value": "linear-closed" },
+                    "x": { "field": "x2" },
+                    "y": { "field": "y2" },
+                    "stroke": { "value": "lightgray" },
+                    "strokeWidth": { "value": 1 }
+                }
+            }
+        }
+    ]
+}
